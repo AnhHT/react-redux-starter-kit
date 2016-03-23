@@ -12,7 +12,7 @@ import DataView from 'views/GetData/DataView'
 
 export default (store) => (
   <Route path='/' component={CoreLayout}>
-    <IndexRoute component={HomeView} />
-    <Route path='/data' component={DataView}/>
+    <IndexRoute component={DataView} />
+    <Route path='/data' component={HomeView}/>
   </Route>
 )

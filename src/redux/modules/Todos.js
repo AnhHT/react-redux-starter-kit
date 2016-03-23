@@ -30,29 +30,32 @@ function checkHttpStatus (response) {
 }
 
 function parseJSON (response) {
-  console.log(response)
+  console.log('parsing')
   return response.json()
 }
 
-let API_URL = '//api.cityme.asia/search?categories'
+let API_URL = 'http://localhost:59284/'
 export function getData () {
   return (dispatch, getState) => {
     dispatch(getDataRequest())
-    return fetch(API_URL + '=Caf%C3%A9&skip=0&limit=25&sort=near&location=21.0017074%2C105.7923914&', {
+    return fetch(API_URL + 'Home/GetData', {
       method: 'get',
       headers: {
         'Accept': 'application/json, application/xml, text/plain, text/html, *.*',
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-      }
+      },
+      mode: 'cors'
     }).then(checkHttpStatus)
       .then(parseJSON)
       .then((response) => {
         try {
+          console.log(response)
           dispatch(getDataSuccess(response))
         } catch (e) {
+          console.log(e)
           dispatch(getDataFail({
             status: 405,
-            statusText: 'Parse error'
+            statusText: e
           }))
         }
       })
@@ -89,5 +92,3 @@ export default handleActions({
     }
   }
 }, initialState)
-
-
