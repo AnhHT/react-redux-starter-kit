@@ -1,4 +1,5 @@
-import React from 'react'
+import {React} from 'react/button'
+
 
 type Props = {
 
@@ -8,7 +9,7 @@ export class SimpleButton extends React.Component {
 
   render () {
     return (
-      <div></div>
+      <div> </div>
     )
   }
 }
