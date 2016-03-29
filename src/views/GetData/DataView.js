@@ -11,46 +11,73 @@ const mapStateToProps = (state) => ({
 
 class Rows extends Component {
   static propTypes = {
-    item: PropTypes.object
+    data: PropTypes.object
   }
 
   render () {
+    const item = this.props.data
     return (
-      <tr key={this.props.item.id}>
+      <tr key={item.id}>
         <td>
-          <span className={this.props.item.id % 2 ? classes.even : classes.odd}>{this.props.item.test_data}</span>
+          <span className={item.id % 2 ? classes.even : classes.odd}>{item.test_data}</span>
         </td>
-        <td>{this.props.item.raw_data}</td>
-        <td>{this.props.item.more_column}</td>
-        <td>{this.props.item.more_column2}</td>
-        <td>{this.props.item.more_column3}</td>
-        <td>{this.props.item.more_column4}</td>
-        <td>{this.props.item.more_column5}</td>
-        <td>{this.props.item.more_column6}</td>
-        <td>{this.props.item.more_column7}</td>
+        <td>{item.raw_data}</td>
+        <td>{item.more_column}</td>
+        <td>{item.more_column2}</td>
+        <td>{item.more_column3}</td>
+        <td>{item.more_column4}</td>
+        <td>{item.more_column5}</td>
+        <td>{item.more_column6}</td>
+        <td>{item.more_column7}</td>
       </tr>
     )
   }
 }
 
-export class DataView extends Component {
+export default class DataView extends Component {
   static propTypes = {
     data: PropTypes.object,
     isFetching: PropTypes.bool,
     isFetch: PropTypes.bool,
-    getData: PropTypes.func
+    getData: PropTypes.func,
+    uploadFile: PropTypes.func
   };
 
+  constructor (props) {
+    super(props)
+    this.state = {
+      fileData: null
+    }
+  }
+
   componentWillMount () {
-    this.props.getData()
+    // this.props.getData()
+  }
+
+  handleSubmit (e) {
+    e.preventDefault()
+    this.props.uploadFile(this.state.fileData)
+  }
+
+  handleFile (e) {
+    let formData = new FormData()
+    let file = e.target.files[0]
+    formData.append('rawFile', file)
+    this.setState({fileData: formData})
   }
 
   render () {
-    const rowData = this.props.isFetch ? this.props.data.result.map((item) => <Rows item={item}/>)
-    : <tr><td colSpan='8'>test</td></tr>
+    const rowData = this.props.isFetch ? this.props.data.result.map((rowItem) => <Rows data={rowItem}/>)
+    : <tr><td colSpan='8'>loading...</td></tr>
 
     return (
       <div className={classes.tempView}>
+        <div>
+          <form encType='multipart/form-data'>
+            <input type='file' onChange={::this.handleFile} />
+            <button type='button' onClick={::this.handleSubmit}>Upload</button>
+          </form>
+        </div>
         <table>
           <thead>
             <tr>
@@ -65,13 +92,7 @@ export class DataView extends Component {
               <th>more_column7</th>
             </tr>
           </thead>
-          <tbody>
-          {rowData}
-          {
-            this.props.isFetch ? <tr><td colSpan='8'>{this.props.data.result.length}</td></tr>
-             : <tr><td colSpan='8'>0</td></tr>
-          }
-          </tbody>
+          <tbody>{rowData}</tbody>
         </table>
       </div>
     )

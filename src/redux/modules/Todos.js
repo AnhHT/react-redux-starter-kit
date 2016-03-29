@@ -7,16 +7,25 @@ import fetch from 'isomorphic-fetch'
 export const FETCH_DATA_REQUEST = 'FETCH_DATA_REQUEST'
 export const FETCH_DATA_SUCCESS = 'FETCH_DATA_SUCCESS'
 export const FETCH_DATA_FAIL = 'FETCH_DATA_FAIL'
+export const UPLOAD_FILE_REQUEST = 'UPLOAD_FILE_REQUEST'
+export const UPLOAD_FILE_SUCCESS = 'UPLOAD_FILE_SUCCESS'
+export const UPLOAD_FILE_FAIL = 'UPLOAD_FILE_FAIL'
 
 export const getDataRequest = createAction(FETCH_DATA_REQUEST, (data) => data)
 export const getDataSuccess = createAction(FETCH_DATA_SUCCESS, (data) => data)
 export const getDataFail = createAction(FETCH_DATA_FAIL, (data) => data)
 
+export const uploadFileRequest = createAction(UPLOAD_FILE_REQUEST, (data) => data)
+export const uploadFileSuccess = createAction(UPLOAD_FILE_SUCCESS, (data) => data)
+export const uploadFileFail = createAction(UPLOAD_FILE_FAIL, (data) => data)
+
 const initialState = Immutable.fromJS({
   myCollection: null,
   isFetch: false,
   isFetching: false,
-  statusText: null
+  statusText: null,
+  isUpload: false,
+  isUploading: false
 })
 
 function checkHttpStatus (response) {
@@ -30,7 +39,6 @@ function checkHttpStatus (response) {
 }
 
 function parseJSON (response) {
-  console.log('parsing')
   return response.json()
 }
 
@@ -68,8 +76,36 @@ export function getData () {
   }
 }
 
+export function uploadFile (fileData) {
+  return (dispatch, getState) => {
+    dispatch(uploadFileRequest())
+    return fetch(API_URL + 'Home/ParseXlsx', {
+      method: 'post',
+      mode: 'cors',
+      body: fileData
+    }).then(checkHttpStatus)
+      .then(parseJSON)
+      .then((response) => {
+        try {
+          dispatch(uploadFileSuccess(response))
+        } catch (e) {
+          dispatch(uploadFileFail({
+            status: 403,
+            statusText: 'Invalid file'
+          }))
+        }
+      })
+      .catch((error) => {
+        dispatch(uploadFileFail({
+          status: 401,
+          statusText: error.message
+        }))
+      })
+  }
+}
+
 // Action Creators
-export const actions = { getData }
+export const actions = { getData, uploadFile }
 
 export default handleActions({
   [FETCH_DATA_REQUEST]: (state, { payload }) => {
@@ -88,6 +124,24 @@ export default handleActions({
   [FETCH_DATA_FAIL]: (state, { payload }) => {
     return {...state,
       isFetching: false,
+      statusText: payload.statusText
+    }
+  },
+  [UPLOAD_FILE_REQUEST]: (state, { payload }) => {
+    return {...state,
+      isUploading: true,
+      isUpload: false
+    }
+  },
+  [UPLOAD_FILE_SUCCESS]: (state, { payload }) => {
+    return {...state,
+      isUploading: false,
+      isUpload: true
+    }
+  },
+  [UPLOAD_FILE_FAIL]: (state, { payload }) => {
+    return {...state,
+      isUploading: false,
       statusText: payload.statusText
     }
   }
