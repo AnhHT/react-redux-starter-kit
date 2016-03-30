@@ -24,7 +24,7 @@ const initialState = Immutable.fromJS({
   isFetch: false,
   isFetching: false,
   statusText: null,
-  isUpload: false,
+  isUploaded: false,
   isUploading: false
 })
 
@@ -46,19 +46,17 @@ let API_URL = 'http://localhost:59284/'
 export function getData () {
   return (dispatch, getState) => {
     dispatch(getDataRequest())
-    return fetch(API_URL + 'Home/GetData', {
+    return fetch('/offices.json', {
       method: 'get',
       headers: {
         'Accept': 'application/json, application/xml, text/plain, text/html, *.*',
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-      },
-      mode: 'cors'
+      }
     }).then(checkHttpStatus)
       .then(parseJSON)
       .then((response) => {
         try {
-          console.log(response)
-          dispatch(getDataSuccess(response))
+          dispatch(getDataSuccess(reOrderOffice(response.items, null, {filteredList: []})))
         } catch (e) {
           console.log(e)
           dispatch(getDataFail({
@@ -76,11 +74,34 @@ export function getData () {
   }
 }
 
+export function reOrderOffice (normalArr, parrentOfficeId, state) {
+  if (!parrentOfficeId) {
+    return {filteredList: normalArr}
+  }
+
+  let childs = normalArr.filter((item) => {
+    return item.ParrentOfficeId === parrentOfficeId
+  })
+
+  childs.sort((l, r) => {
+    return l.OrderNo > r.OrderNo ? 1 : -1
+  })
+
+  childs.map((item) => {
+    for (let i = 0; i < childs.length; i++) {
+      item.Orders.concat({ OrderNo: (i + 1), Text: 'Vị trí ' + (i + 1) })
+    }
+
+    state.filteredList.concat(item)
+    reOrderOffice(normalArr, item.ID, state.filteredList)
+  })
+}
+
 export function uploadFile (fileData) {
   return (dispatch, getState) => {
     dispatch(uploadFileRequest())
     return fetch(API_URL + 'Home/ParseXlsx', {
-      method: 'post',
+      method: 'POST',
       mode: 'cors',
       body: fileData
     }).then(checkHttpStatus)
@@ -124,25 +145,28 @@ export default handleActions({
   [FETCH_DATA_FAIL]: (state, { payload }) => {
     return {...state,
       isFetching: false,
-      statusText: payload.statusText
+      statusText: payload.statusText,
+      myCollection: null
     }
   },
   [UPLOAD_FILE_REQUEST]: (state, { payload }) => {
     return {...state,
       isUploading: true,
-      isUpload: false
+      isUploaded: false
     }
   },
   [UPLOAD_FILE_SUCCESS]: (state, { payload }) => {
     return {...state,
       isUploading: false,
-      isUpload: true
+      isUploaded: true,
+      myCollection: payload
     }
   },
   [UPLOAD_FILE_FAIL]: (state, { payload }) => {
     return {...state,
       isUploading: false,
-      statusText: payload.statusText
+      statusText: payload.statusText,
+      myCollection: null
     }
   }
 }, initialState)

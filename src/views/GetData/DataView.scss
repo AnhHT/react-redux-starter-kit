@@ -2,19 +2,12 @@ div.tempView {
   padding: 0px 20px;
 }
 
-  div.tempView span {
-    float:left;
-    padding: 5px;
-    margin: 2px;
-    display: block;
-  }
-
-  div.tempView span.odd {
+  div.tempView tr.odd > td {
     background: red;
     color: #fff;
   }
 
-  div.tempView span.even {
+  div.tempView tr.even > td {
         background: deepskyblue;
         color: #fff;
   }

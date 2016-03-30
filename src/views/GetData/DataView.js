@@ -4,32 +4,34 @@ import { connect } from 'react-redux'
 import classes from './DataView.scss'
 
 const mapStateToProps = (state) => ({
-  isFetching: state.todo.isFetching,
-  isFetch: state.todo.isFetch,
+  isUploading: state.todo.isUploading,
+  isUploaded: state.todo.isUploaded,
   data: state.todo.myCollection
 })
 
-class Rows extends Component {
+class MyTable extends Component {
   static propTypes = {
     data: PropTypes.object
   }
 
   render () {
-    const item = this.props.data
+    const headers = this.props.data ? this.props.data.Headers : new Map()
+    const rows = this.props.data ? this.props.data.Rows : new Map()
     return (
-      <tr key={item.id}>
-        <td>
-          <span className={item.id % 2 ? classes.even : classes.odd}>{item.test_data}</span>
-        </td>
-        <td>{item.raw_data}</td>
-        <td>{item.more_column}</td>
-        <td>{item.more_column2}</td>
-        <td>{item.more_column3}</td>
-        <td>{item.more_column4}</td>
-        <td>{item.more_column5}</td>
-        <td>{item.more_column6}</td>
-        <td>{item.more_column7}</td>
-      </tr>
+      <table>
+        <thead>
+          <tr>
+            {headers.map((item) => <th>{item.toUpperCase()}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) =>
+            <tr>
+              {row.CellValues.map((cell) => <td>{cell}</td>)}
+            </tr>
+          )}
+        </tbody>
+      </table>
     )
   }
 }
@@ -37,9 +39,8 @@ class Rows extends Component {
 export default class DataView extends Component {
   static propTypes = {
     data: PropTypes.object,
-    isFetching: PropTypes.bool,
-    isFetch: PropTypes.bool,
-    getData: PropTypes.func,
+    isUploading: PropTypes.bool,
+    isUploaded: PropTypes.bool,
     uploadFile: PropTypes.func
   };
 
@@ -48,10 +49,6 @@ export default class DataView extends Component {
     this.state = {
       fileData: null
     }
-  }
-
-  componentWillMount () {
-    // this.props.getData()
   }
 
   handleSubmit (e) {
@@ -67,8 +64,7 @@ export default class DataView extends Component {
   }
 
   render () {
-    const rowData = this.props.isFetch ? this.props.data.result.map((rowItem) => <Rows data={rowItem}/>)
-    : <tr><td colSpan='8'>loading...</td></tr>
+    const data = this.props.isUploaded ? <MyTable data={this.props.data.result}/> : <div>loading...</div>
 
     return (
       <div className={classes.tempView}>
@@ -78,22 +74,7 @@ export default class DataView extends Component {
             <button type='button' onClick={::this.handleSubmit}>Upload</button>
           </form>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Fullname</th>
-              <th>more_column</th>
-              <th>more_column2</th>
-              <th>more_column3</th>
-              <th>more_column4</th>
-              <th>more_column5</th>
-              <th>more_column6</th>
-              <th>more_column7</th>
-            </tr>
-          </thead>
-          <tbody>{rowData}</tbody>
-        </table>
+        {data}
       </div>
     )
   }
