@@ -56,7 +56,7 @@ export function getData () {
       .then(parseJSON)
       .then((response) => {
         try {
-          dispatch(getDataSuccess(reOrderOffice(response.items, null, {filteredList: []})))
+          dispatch(getDataSuccess(reOrderOffice(response.items)))
         } catch (e) {
           console.log(e)
           dispatch(getDataFail({
@@ -74,27 +74,27 @@ export function getData () {
   }
 }
 
-export function reOrderOffice (normalArr, parrentOfficeId, state) {
-  if (!parrentOfficeId) {
-    return {filteredList: normalArr}
-  }
-
-  let childs = normalArr.filter((item) => {
+export function reOrderOffice (normalArr, parrentOfficeId) {
+  let filteredList = []
+  let childs = parrentOfficeId ? normalArr.filter((item) => {
     return item.ParrentOfficeId === parrentOfficeId
-  })
+  }) : normalArr
 
   childs.sort((l, r) => {
     return l.OrderNo > r.OrderNo ? 1 : -1
   })
 
   childs.map((item) => {
+    item.Orders = []
     for (let i = 0; i < childs.length; i++) {
-      item.Orders.concat({ OrderNo: (i + 1), Text: 'Vị trí ' + (i + 1) })
+      item.Orders = [...item.Orders, ({ OrderNo: (i + 1), Text: 'Vị trí ' + (i + 1) })]
     }
 
-    state.filteredList.concat(item)
-    reOrderOffice(normalArr, item.ID, state.filteredList)
+    filteredList = [...filteredList, item]
+    reOrderOffice(normalArr, item.ID)
   })
+
+  return {filteredList: filteredList}
 }
 
 export function uploadFile (fileData) {
