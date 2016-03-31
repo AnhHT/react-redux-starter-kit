@@ -10,6 +10,7 @@ export const FETCH_DATA_FAIL = 'FETCH_DATA_FAIL'
 export const UPLOAD_FILE_REQUEST = 'UPLOAD_FILE_REQUEST'
 export const UPLOAD_FILE_SUCCESS = 'UPLOAD_FILE_SUCCESS'
 export const UPLOAD_FILE_FAIL = 'UPLOAD_FILE_FAIL'
+export const RE_ORDER_DATA = 'RE_ORDER_DATA'
 
 export const getDataRequest = createAction(FETCH_DATA_REQUEST, (data) => data)
 export const getDataSuccess = createAction(FETCH_DATA_SUCCESS, (data) => data)
@@ -19,6 +20,8 @@ export const uploadFileRequest = createAction(UPLOAD_FILE_REQUEST, (data) => dat
 export const uploadFileSuccess = createAction(UPLOAD_FILE_SUCCESS, (data) => data)
 export const uploadFileFail = createAction(UPLOAD_FILE_FAIL, (data) => data)
 
+export const reorderDataAction = createAction(RE_ORDER_DATA, (data) => data)
+
 const initialState = Immutable.fromJS({
   myCollection: null,
   isFetch: false,
@@ -27,6 +30,26 @@ const initialState = Immutable.fromJS({
   isUploaded: false,
   isUploading: false
 })
+
+function reOrderOffice (normalArr, parrentOfficeId, filteredList) {
+  let childs = normalArr.filter((item) => {
+    return item.ParrentOfficeId === parrentOfficeId
+  })
+
+  childs.sort((l, r) => {
+    return l.OrderNo > r.OrderNo ? 1 : -1
+  })
+
+  childs.map((item) => {
+    item.Orders = []
+    for (let i = 0; i < childs.length; i++) {
+      item.Orders = [...item.Orders, ({ OrderNo: (i + 1), Text: (i + 1) })]
+    }
+
+    filteredList.push(item)
+    reOrderOffice(normalArr, item.ID, filteredList)
+  })
+}
 
 function checkHttpStatus (response) {
   if (response.status >= 200 && response.status < 300) {
@@ -56,7 +79,9 @@ export function getData () {
       .then(parseJSON)
       .then((response) => {
         try {
-          dispatch(getDataSuccess(reOrderOffice(response.items)))
+          let temp = []
+          reOrderOffice(response.items, -1, temp)
+          dispatch(getDataSuccess({filteredList: temp}))
         } catch (e) {
           console.log(e)
           dispatch(getDataFail({
@@ -72,29 +97,6 @@ export function getData () {
       }))
     })
   }
-}
-
-export function reOrderOffice (normalArr, parrentOfficeId) {
-  let filteredList = []
-  let childs = parrentOfficeId ? normalArr.filter((item) => {
-    return item.ParrentOfficeId === parrentOfficeId
-  }) : normalArr
-
-  childs.sort((l, r) => {
-    return l.OrderNo > r.OrderNo ? 1 : -1
-  })
-
-  childs.map((item) => {
-    item.Orders = []
-    for (let i = 0; i < childs.length; i++) {
-      item.Orders = [...item.Orders, ({ OrderNo: (i + 1), Text: 'Vị trí ' + (i + 1) })]
-    }
-
-    filteredList = [...filteredList, item]
-    reOrderOffice(normalArr, item.ID)
-  })
-
-  return {filteredList: filteredList}
 }
 
 export function uploadFile (fileData) {
@@ -125,8 +127,16 @@ export function uploadFile (fileData) {
   }
 }
 
+export function orderData (data) {
+  return (dispatch, getState) => {
+    let temp = []
+    reOrderOffice(data, -1, temp)
+    dispatch(reorderDataAction({filteredList: temp}))
+  }
+}
+
 // Action Creators
-export const actions = { getData, uploadFile }
+export const actions = { getData, uploadFile, orderData }
 
 export default handleActions({
   [FETCH_DATA_REQUEST]: (state, { payload }) => {
@@ -167,6 +177,11 @@ export default handleActions({
       isUploading: false,
       statusText: payload.statusText,
       myCollection: null
+    }
+  },
+  [RE_ORDER_DATA]: (state, { payload }) => {
+    return {...state,
+      myCollection: payload
     }
   }
 }, initialState)

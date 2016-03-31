@@ -8,18 +8,47 @@ const mapStateToProps = (state) => ({
   data: state.todo.myCollection
 })
 
-class Row extends Component {
+class CellItem extends Component {
   static propTypes = {
-    item: PropTypes.object,
-    counter: PropTypes.number
+    orders: PropTypes.array,
+    selectedVal: PropTypes.number,
+    handleChange: PropTypes.func,
+    rowIndex: PropTypes.number
   }
 
   render () {
+    return (
+      <select value={this.props.selectedVal} name='position'
+        onChange={this.props.handleChange} data-index={this.props.rowIndex}>
+        {this.props.orders.map((opt) => <option value={opt.OrderNo}>{opt.Text}</option>)}
+      </select>
+    )
+  }
+}
+
+class Row extends Component {
+  static propTypes = {
+    item: PropTypes.object,
+    counter: PropTypes.number,
+    handleChange: PropTypes.func
+  }
+
+  render () {
+    let multiple = (this.props.item.IdPath.match(new RegExp('.', 'g')) || []).length
+    let dynamicStyle = {
+      paddingLeft: (multiple * 5)
+    }
+
     let item = this.props.item
     return (
       <tr>
         <td>{this.props.counter}</td>
-        <td>{item.Name}</td>
+        <td>
+          <span style={dynamicStyle}>
+            <CellItem orders={item.Orders} selectedVal={item.OrderNo}
+              handleChange={this.props.handleChange} rowIndex={this.props.counter}/> - {item.Name}
+          </span>
+        </td>
         <td>{item.ShortName}</td>
         <td>{item.ParrentName}</td>
       </tr>
@@ -32,7 +61,8 @@ export default class TreeView extends Component {
     data: PropTypes.object,
     isFetching: PropTypes.bool,
     isFetch: PropTypes.bool,
-    getData: PropTypes.func
+    getData: PropTypes.func,
+    orderData: PropTypes.func
   };
 
   constructor (props) {
@@ -46,13 +76,21 @@ export default class TreeView extends Component {
     this.props.getData()
   }
 
-  handleSubmit (e) {
+  handleChange (e) {
+    e.preventDefault()
+    let selectedVal = parseInt(e.target.value)
+    let idx = parseInt(e.target.getAttribute('data-index'))
+    let rArr = this.props.data.filteredList
+    let temp = rArr[idx]
+    rArr = [...rArr.slice(0, idx), {...temp, OrderNo: selectedVal}, ...rArr.slice(idx + 1)]
+    this.props.orderData(rArr)
   }
 
   render () {
     let counter = 0
-    const rows = this.props.isFetch ? this.props.data.filteredList.map((item) =>
-      <Row item={item} key={item.ID} counter={counter++}/>) : <tr>loading...</tr>
+    let rootArray = this.props.data ? this.props.data.filteredList : new Map()
+    const rows = this.props.isFetch ? rootArray.map((item) =>
+      <Row item={item} key={item.ID} counter={counter++} handleChange={::this.handleChange}/>) : <tr>loading...</tr>
 
     return (
       <div className='abc'>
