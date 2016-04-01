@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import { actions as manageData } from '../../redux/modules/Todos'
+import Header from './Header'
 import { connect } from 'react-redux'
 import classes from './DataView.scss'
 
@@ -60,12 +61,13 @@ export default class DataView extends Component {
     let formData = new FormData()
     let file = e.target.files[0]
     formData.append('rawFile', file)
-    this.setState({fileData: formData})
+    this.setState({fileData: formData}, () => {
+      console.log(this.state)
+    })
   }
 
   render () {
     const data = this.props.isUploaded ? <MyTable data={this.props.data.result}/> : <div>loading...</div>
-
     return (
       <div className={classes.tempView}>
         <div>
@@ -73,6 +75,9 @@ export default class DataView extends Component {
             <input type='file' onChange={::this.handleFile} />
             <button type='button' onClick={::this.handleSubmit}>Upload</button>
           </form>
+        </div>
+        <div>
+          <Header/>
         </div>
         {data}
       </div>
