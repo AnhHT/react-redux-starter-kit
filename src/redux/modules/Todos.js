@@ -7,6 +7,11 @@ import fetch from 'isomorphic-fetch'
 export const FETCH_DATA_REQUEST = 'FETCH_DATA_REQUEST'
 export const FETCH_DATA_SUCCESS = 'FETCH_DATA_SUCCESS'
 export const FETCH_DATA_FAIL = 'FETCH_DATA_FAIL'
+
+export const FETCH_HEADER_REQUEST = 'FETCH_HEADER_REQUEST'
+export const FETCH_HEADER_SUCCESS = 'FETCH_HEADER_SUCCESS'
+export const FETCH_HEADER_FAIL = 'FETCH_HEADER_FAIL'
+
 export const UPLOAD_FILE_REQUEST = 'UPLOAD_FILE_REQUEST'
 export const UPLOAD_FILE_SUCCESS = 'UPLOAD_FILE_SUCCESS'
 export const UPLOAD_FILE_FAIL = 'UPLOAD_FILE_FAIL'
@@ -16,6 +21,10 @@ export const getDataRequest = createAction(FETCH_DATA_REQUEST, (data) => data)
 export const getDataSuccess = createAction(FETCH_DATA_SUCCESS, (data) => data)
 export const getDataFail = createAction(FETCH_DATA_FAIL, (data) => data)
 
+export const getHeaderRequest = createAction(FETCH_HEADER_REQUEST, (data) => data)
+export const getHeaderSuccess = createAction(FETCH_HEADER_SUCCESS, (data) => data)
+export const getHeaderFail = createAction(FETCH_HEADER_FAIL, (data) => data)
+
 export const uploadFileRequest = createAction(UPLOAD_FILE_REQUEST, (data) => data)
 export const uploadFileSuccess = createAction(UPLOAD_FILE_SUCCESS, (data) => data)
 export const uploadFileFail = createAction(UPLOAD_FILE_FAIL, (data) => data)
@@ -24,8 +33,11 @@ export const reorderDataAction = createAction(RE_ORDER_DATA, (data) => data)
 
 const initialState = Immutable.fromJS({
   myCollection: null,
+  mappingHeader: null,
   isFetch: false,
   isFetching: false,
+  isFetchHeader: false,
+  isFetchingHeader: false,
   statusText: null,
   isUploaded: false,
   isUploading: false
@@ -66,7 +78,7 @@ function parseJSON (response) {
 }
 
 let API_URL = 'http://localhost:59284/'
-export function getData () {
+/*export function getData () {
   return (dispatch, getState) => {
     dispatch(getDataRequest())
     return fetch('/offices.json', {
@@ -96,6 +108,53 @@ export function getData () {
         statusText: error.message
       }))
     })
+  }
+}*/
+
+export function getData () {
+  return (dispatch, getState) => {
+    dispatch(getDataRequest())
+    return fetch('/data.json', {
+      method: 'get'
+    }).then(checkHttpStatus)
+      .then(parseJSON)
+      .then((response) => {
+        try {
+          dispatch(getDataSuccess(response))
+        } catch (e) {
+          console.log(e)
+          dispatch(getDataFail({
+            status: 405,
+            statusText: e
+          }))
+        }
+      })
+      .catch((error) => {
+        dispatch(getDataFail({
+          status: 405,
+          statusText: error.message
+        }))
+      })
+  }
+}
+
+export function getMappingHeader () {
+  return (dispatch, getState) => {
+    dispatch(getHeaderRequest())
+    return fetch('/mapping_db.json', {
+      method: 'get'
+    }).then(checkHttpStatus)
+      .then(parseJSON)
+      .then((response) => {
+        try {
+          dispatch(getHeaderSuccess(response))
+        } catch (e) {
+          dispatch(getHeaderFail({
+            status: 405,
+            statusText: e
+          }))
+        }
+      })
   }
 }
 
@@ -136,7 +195,7 @@ export function orderData (data) {
 }
 
 // Action Creators
-export const actions = { getData, uploadFile, orderData }
+export const actions = { getData, getMappingHeader, uploadFile, orderData }
 
 export default handleActions({
   [FETCH_DATA_REQUEST]: (state, { payload }) => {
@@ -157,6 +216,26 @@ export default handleActions({
       isFetching: false,
       statusText: payload.statusText,
       myCollection: null
+    }
+  },
+  [FETCH_HEADER_REQUEST]: (state, { payload }) => {
+    return {...state,
+      isFetchingHeader: true,
+      isFetchHeader: false
+    }
+  },
+  [FETCH_HEADER_SUCCESS]: (state, { payload }) => {
+    return {...state,
+      isFetchingHeader: false,
+      isFetchHeader: true,
+      mappingHeader: payload
+    }
+  },
+  [FETCH_HEADER_FAIL]: (state, { payload }) => {
+    return {...state,
+      isFetchingHeader: false,
+      statusText: payload.statusText,
+      mappingHeader: null
     }
   },
   [UPLOAD_FILE_REQUEST]: (state, { payload }) => {

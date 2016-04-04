@@ -1,12 +1,16 @@
-import React, { Component, PropTypes } from 'react'
-import { actions as manageData } from '../../redux/modules/Todos'
-import Header from './Header'
-import { connect } from 'react-redux'
+import React, {Component, PropTypes} from 'react'
+import {actions as manageData} from '../../redux/modules/Todos'
+import {connect} from 'react-redux'
 import classes from './DataView.scss'
 
 const mapStateToProps = (state) => ({
   isUploading: state.todo.isUploading,
   isUploaded: state.todo.isUploaded,
+  isFetching: state.todo.isFetching,
+  isFetch: state.todo.isFetch,
+  isFetchHeader: state.todo.isFetchHeader,
+  isFetchingHeader: state.todo.isFetchingHeader,
+  mappingHeader: state.todo.mappingHeader,
   data: state.todo.myCollection
 })
 
@@ -22,15 +26,15 @@ class MyTable extends Component {
       <table>
         <thead>
           <tr>
-            {headers.map((item) => <th>{item.toUpperCase()}</th>)}
+          {headers.map((item) => <th>{item.toUpperCase()}</th>)}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) =>
-            <tr>
-              {row.CellValues.map((cell) => <td>{cell}</td>)}
-            </tr>
-          )}
+        {rows.map((row) =>
+          <tr>
+            {row.CellValues.map((cell) => <td>{cell}</td>)}
+          </tr>
+        )}
         </tbody>
       </table>
     )
@@ -40,6 +44,11 @@ class MyTable extends Component {
 export default class DataView extends Component {
   static propTypes = {
     data: PropTypes.object,
+    mappingHeader: PropTypes.object,
+    isFetching: PropTypes.bool,
+    isFetch: PropTypes.bool,
+    isFetchingHeader: PropTypes.bool,
+    isFetchHeader: PropTypes.bool,
     isUploading: PropTypes.bool,
     isUploaded: PropTypes.bool,
     uploadFile: PropTypes.func
@@ -52,12 +61,17 @@ export default class DataView extends Component {
     }
   }
 
-  handleSubmit (e) {
+  componentDidMount() {
+    this.props.getMappingHeader()
+    this.props.getData()
+  }
+
+  handleSubmit(e) {
     e.preventDefault()
     this.props.uploadFile(this.state.fileData)
   }
 
-  handleFile (e) {
+  handleFile(e) {
     let formData = new FormData()
     let file = e.target.files[0]
     formData.append('rawFile', file)
@@ -66,20 +80,25 @@ export default class DataView extends Component {
     })
   }
 
-  render () {
-    const data = this.props.isUploaded ? <MyTable data={this.props.data.result}/> : <div>loading...</div>
+  render() {
+    const data = this.props.isFetch ? <MyTable data={this.props.data.result}/> : <div>loading...</div>
+    const mappingHeader = this.props.isFetchHeader ? this.props.mappingHeader.result.Columns.map((item) =>
+      <span>{item}</span>
+    ) : <div>loading...</div>
     return (
       <div className={classes.tempView}>
         <div>
           <form encType='multipart/form-data'>
-            <input type='file' onChange={::this.handleFile} />
+            <input type='file' onChange={::this.handleFile}/>
             <button type='button' onClick={::this.handleSubmit}>Upload</button>
           </form>
         </div>
         <div>
-          <Header/>
+          {mappingHeader}
         </div>
-        {data}
+        <div>
+          {data}
+        </div>
       </div>
     )
   }
