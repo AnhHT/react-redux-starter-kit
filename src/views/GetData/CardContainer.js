@@ -59,7 +59,6 @@ export default class CardContainer extends Component {
   }
 
   onSelectHeaderIdx (e) {
-    console.log(e.target.value)
     this.setState({headerIndex: e.target.value}, () => {
       console.log(this.state)
     })
@@ -73,7 +72,7 @@ export default class CardContainer extends Component {
       <table>
         <thead>
           <tr>
-            <th width='70'></th>
+            <th width='70'>Vị trí Header</th>
           {cards.map((item, i) => <th><Card key={i} id={i} index={i} text={item.value} moveCard={this.moveCard}/></th>)}
           </tr>
           <tr>
