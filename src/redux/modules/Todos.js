@@ -77,8 +77,8 @@ function parseJSON (response) {
   return response.json()
 }
 
-let API_URL = 'http://localhost:59284/'
-/*export function getData () {
+let API_URL = 'http://192.168.1.108:82/'
+/*  export function getData () {
   return (dispatch, getState) => {
     dispatch(getDataRequest())
     return fetch('/offices.json', {
@@ -141,20 +141,32 @@ export function getData () {
 export function getMappingHeader () {
   return (dispatch, getState) => {
     dispatch(getHeaderRequest())
-    return fetch('/mapping_db.json', {
-      method: 'get'
-    }).then(checkHttpStatus)
-      .then(parseJSON)
-      .then((response) => {
-        try {
-          dispatch(getHeaderSuccess(response))
-        } catch (e) {
-          dispatch(getHeaderFail({
-            status: 405,
-            statusText: e
-          }))
-        }
-      })
+    let temp = localStorage.getItem('selectedFile')
+    if (temp) {
+      let selectedFile = JSON.parse(temp)
+      dispatch(getHeaderSuccess(selectedFile))
+      return
+    }
+
+    dispatch(getHeaderFail({
+      status: 405,
+      statusText: 'Parse failed'
+    }))
+    // console.log(localStorage.getItem('selectedFile'))
+    // return fetch('/mapping_db.json', {
+    //   method: 'get'
+    // }).then(checkHttpStatus)
+    //   .then(parseJSON)
+    //   .then((response) => {
+    //     try {
+    //       dispatch(getHeaderSuccess(response))
+    //     } catch (e) {
+    //       dispatch(getHeaderFail({
+    //         status: 405,
+    //         statusText: e
+    //       }))
+    //     }
+    //   })
   }
 }
 

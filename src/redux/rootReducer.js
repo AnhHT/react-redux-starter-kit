@@ -1,12 +1,12 @@
 import { combineReducers } from 'redux'
 import { routerReducer as router } from 'react-router-redux'
-import counter from './modules/counter'
 import Todos from './modules/Todos'
+import fileTodo from './modules/fileTodo'
 
 const reducers = {
-  counter: counter,
   router: router,
-  todo: Todos
+  todo: Todos,
+  fileTodo: fileTodo
 }
 
 export default combineReducers(reducers)
