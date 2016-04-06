@@ -7,8 +7,6 @@ import classes from './DataView.scss'
 const mapStateToProps = (state) => ({
   isUploading: state.todo.isUploading,
   isUploaded: state.todo.isUploaded,
-  isFetching: state.todo.isFetching,
-  isFetch: state.todo.isFetch,
   isFetchHeader: state.todo.isFetchHeader,
   isFetchingHeader: state.todo.isFetchingHeader,
   mappingHeader: state.todo.mappingHeader,
@@ -19,15 +17,13 @@ export default class DataView extends Component {
   static propTypes = {
     data: PropTypes.object,
     mappingHeader: PropTypes.object,
-    isFetching: PropTypes.bool,
-    isFetch: PropTypes.bool,
     isFetchingHeader: PropTypes.bool,
     isFetchHeader: PropTypes.bool,
     isUploading: PropTypes.bool,
     isUploaded: PropTypes.bool,
     uploadFile: PropTypes.func,
     getMappingHeader: PropTypes.func,
-    getData: PropTypes.func
+    parseXlsx: PropTypes.func
   };
 
   constructor (props) {
@@ -35,10 +31,6 @@ export default class DataView extends Component {
     this.state = {
       fileData: null
     }
-  }
-
-  componentDidMount () {
-    this.props.getData()
   }
 
   handleSubmit (e) {
@@ -57,15 +49,17 @@ export default class DataView extends Component {
 
   render () {
     let key = 1
-    const data = this.props.isFetch ? (<CardContainer key={key} data={this.props.data}
-      gHeader={this.props.getMappingHeader} headers={this.props.mappingHeader}
-      isFetch={this.props.isFetchHeader}/>) : <div>loading...</div>
+    const data = this.props.isUploaded ? (<CardContainer key={key} previewFile={this.props.data}
+      gHeader={this.props.getMappingHeader} headers={this.props.mappingHeader} parseXlsx={this.props.parseXlsx}
+      isFetch={this.props.isFetchHeader}/>) : (this.props.isUploading ? <div>loading...</div> : <div></div>)
     return (
       <div className={classes.tempView}>
-        <div>
-          <form encType='multipart/form-data'>
-            <input type='file' onChange={::this.handleFile}/>
-            <button type='button' onClick={::this.handleSubmit}>Upload</button>
+        <div style={{paddingBottom: 10, paddingTop: 10}}>
+          <form className='form-inline' encType='multipart/form-data'>
+            <div className='form-group' style={{paddingRight: 10}}>
+              <input type='file' onChange={::this.handleFile} className='form-control'/>
+            </div>
+            <button type='button' onClick={::this.handleSubmit} className='btn btn-default'>Upload</button>
           </form>
         </div>
         <div>

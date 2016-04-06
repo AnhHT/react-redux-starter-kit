@@ -1,7 +1,7 @@
 import { createAction, handleActions } from 'redux-actions'
 import Immutable from 'immutable'
 import fetch from 'isomorphic-fetch'
-import { checkHttpStatus, parseJSON } from '../../common/common'
+import { checkHttpStatus, parseJSON, API_URL } from '../../common/common'
 import { push } from 'react-router-redux'
 
 // Constants
@@ -42,11 +42,10 @@ const initialState = Immutable.fromJS({
   statusText: null
 })
 
-let API_URL = 'http://192.168.1.108:82'
 export function getFiles () {
   return (dispatch, getState) => {
     dispatch(getFilesRequest())
-    return fetch(`${API_URL}/Home/GetFilesTeamplateExecl`, {
+    return fetch(`${API_URL}/Excel/GetFilesTeamplateExecl`, {
       method: 'get'
     }).then(checkHttpStatus)
       .then(parseJSON)
@@ -72,7 +71,7 @@ export function getFiles () {
 export function getPreviewLayout (fileName) {
   return (dispatch, getState) => {
     dispatch(getPreviewLayoutRequest())
-    return fetch(`${API_URL}/Home/GetExeclModel?filename=${fileName}`, {
+    return fetch(`${API_URL}/Excel/GetExeclModel?filename=${fileName}`, {
       method: 'get'
     }).then(checkHttpStatus)
       .then(parseJSON)
@@ -152,6 +151,7 @@ export default handleActions({
   [GET_PREVIEW_LAYOUT_FAIL]: (state, { payload }) => {
     return {...state,
       isFetchingLayout: false,
+      isFetchLayout: false,
       statusText: payload.statusText,
       previewLayout: null
     }

@@ -11,3 +11,5 @@ export function checkHttpStatus (response) {
 export function parseJSON (response) {
   return response.json()
 }
+
+export const API_URL = 'http://hp:82/api'
