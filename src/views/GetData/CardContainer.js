@@ -27,6 +27,7 @@ export default class CardContainer extends Component {
       cards: [],
       headerIndex: -1,
       dataIndex: -1,
+      footerIndex: -1,
       message: '?'
     }
   }
@@ -99,6 +100,13 @@ export default class CardContainer extends Component {
       return
     }
 
+    if (this.state.footerIndex === -1) {
+      this.setState({message: 'Chưa chọn vị trí của footer'}, () => {
+        this.refs.modal.show()
+      })
+      return
+    }
+
     let headers = this.props.previewFile.data[this.state.headerIndex]
     let cards = this.state.cards
     let map = []
@@ -118,7 +126,7 @@ export default class CardContainer extends Component {
       FileDataName: this.props.previewFile.FileDataName,
       HeaderIndex: this.props.previewFile.data[this.state.headerIndex].Id,
       DataIndex: this.props.previewFile.data[this.state.dataIndex].Id,
-    //   FooterIndex: this.props.previewFile.data[this.state.footerIndex].Id,
+      FooterIndex: this.props.previewFile.data[this.state.footerIndex].Id,
       Map: map,
       ObjectType: 0,
       HasCalculateForOffice: 0,
@@ -132,7 +140,9 @@ export default class CardContainer extends Component {
 
   render () {
     const { cards } = this.state
-    const rows = this.props.previewFile ? this.props.previewFile.data : new Map()
+    const colSpan = cards.length + 2
+    const rows = this.props.previewFile ? this.props.previewFile.dataHeader : new Map()
+    const rowFooter = this.props.previewFile ? this.props.previewFile.dataFooter : new Map()
     return (
       <div>
         <Modal ref='modal'>
@@ -172,6 +182,17 @@ export default class CardContainer extends Component {
                   <td><input type='radio' name='headerIndex' onChange={this.onSelectHeaderIdx}
                     value={idx}/></td>
                   <td><input type='radio' name='dataIndex' onChange={this.onSelectDataIdx}
+                    value={idx}/></td>
+                    {row.Columns.map((cell, idx) =>
+                      <td key={idx} colSpan={cell.ColSpan} rowSpan={cell.Rowspan}>{cell.value}</td>
+                    )}
+                </tr>
+              )}
+              <tr><td colSpan={colSpan}>...</td></tr>
+              <tr><td colSpan={colSpan}>Vị trí footer</td></tr>
+              {rowFooter.map((row, idx) =>
+                <tr key={idx}>
+                  <td colSpan='2'><input type='radio' name='footerIndex' onChange={this.onSelectHeaderIdx}
                     value={idx}/></td>
                     {row.Columns.map((cell, idx) =>
                       <td key={idx} colSpan={cell.ColSpan} rowSpan={cell.Rowspan}>{cell.value}</td>
