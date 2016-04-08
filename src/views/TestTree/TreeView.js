@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react'
-import { actions as manageData } from '../../redux/modules/Todos'
+import { actions as manageData } from '../../redux/modules/treeTodo'
 import { connect } from 'react-redux'
 
 const mapStateToProps = (state) => ({
-  isFetching: state.todo.isFetching,
-  isFetch: state.todo.isFetch,
-  data: state.todo.myCollection
+  isFetching: state.treeTodo.isFetching,
+  isFetch: state.treeTodo.isFetch,
+  data: state.treeTodo.treeCollection
 })
 
 class CellItem extends Component {

@@ -9,9 +9,11 @@ import { Route, IndexRoute } from 'react-router'
 import CoreLayout from 'layouts/CoreLayout/CoreLayout'
 import DataView from 'views/GetData/DataView'
 import SelectTemplate from 'views/TransferData/SelectTemplate'
+import TreeView from 'views/TestTree/TreeView'
 export default (store) => (
   <Route path='/' component={CoreLayout}>
     <IndexRoute component={SelectTemplate} />
     <Route path='/data' component={DataView}/>
+    <Route path='/tree' component={TreeView}/>
   </Route>
 )

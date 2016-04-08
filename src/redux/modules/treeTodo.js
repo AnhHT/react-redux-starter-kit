@@ -15,7 +15,9 @@ export const getDataFail = createAction(FETCH_DATA_FAIL, (data) => data)
 export const reorderDataAction = createAction(RE_ORDER_DATA, (data) => data)
 
 const initialState = Immutable.fromJS({
-  myCollection: null,
+  isFetching: false,
+  isFetch: false,
+  treeCollection: null,
   statusText: null
 })
 
@@ -72,7 +74,6 @@ function reOrderOffice (normalArr, parrentOfficeId, filteredList) {
   })
 }
 
-
 export function orderData (data) {
   return (dispatch, getState) => {
     let temp = []
@@ -81,12 +82,33 @@ export function orderData (data) {
   }
 }
 
-export const actions = { orderData }
+export const actions = { getData, orderData }
 
 export default handleActions({
+  [FETCH_DATA_REQUEST]: (state, { payload }) => {
+    return {...state,
+      isFetching: true,
+      isFetch: false
+    }
+  },
+  [FETCH_DATA_SUCCESS]: (state, { payload }) => {
+    return {...state,
+      isFetching: false,
+      isFetch: true,
+      treeCollection: payload
+    }
+  },
+  [FETCH_DATA_FAIL]: (state, { payload }) => {
+    return {...state,
+      isFetching: false,
+      isFetch: false,
+      statusText: payload.statusText,
+      treeCollection: null
+    }
+  },
   [RE_ORDER_DATA]: (state, { payload }) => {
     return {...state,
-      myCollection: payload
+      treeCollection: payload
     }
   }
 }, initialState)
